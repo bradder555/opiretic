@@ -199,3 +199,13 @@ class Program:
 
     def is_active(self, dt_input: datetime=None) -> States:
         return self.run(dt_input=dt_input) == States.activated
+    
+    @classmethod
+    def default(cls):
+        return cls(
+            trigger = Trigger.day_of_week,
+            start_time = datetime.fromisoformat("1970-01-01T08:00:00"),
+            duration = timedelta(minutes=30),
+            week_day= DayOfWeek.tuesday,
+            enabled= False
+        )
