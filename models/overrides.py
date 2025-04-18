@@ -28,3 +28,12 @@ class Override:
         self.duration = duration
         self.override_enabled = override_enabled
         self.override_type = override_type
+    
+    def applies(self, ref_time: datetime):
+        if self.override_enabled == False:
+            return False, None 
+        
+        if self.start_time <= datetime < (self.start_time + self.duration):
+            return True, self.override_type
+        
+        return False 
