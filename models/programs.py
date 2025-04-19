@@ -1,69 +1,34 @@
-from enum import Enum, auto as enum_auto
-from datetime import datetime, timedelta, timezone
+from enum import Enum, auto as enum_auto, StrEnum
+
+from datetime import datetime, timedelta, timezone, time 
 
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, Union 
 
-
-class Trigger(Enum):
-    daily = "Daily"
-    even_days = "Even Days"
-    odd_days = "Odd Days"
-    week_days = "Week Day"
-    week_ends = "Weekend"
-    day_of_week = "Day of Week"
+from lib.dt_helpers import DayOfWeek
+from lib.pydantic_helper import FromPydantic
 
 
-class DayOfWeek(Enum):
-    monday = 0
-    tuesday = 1
-    wednesday = 2
-    thursday = 3
-    friday = 4
-    saturday = 5
-    sunday = 6
+class Trigger(FromPydantic, StrEnum):
+    daily = enum_auto()
+    even_days = enum_auto()
+    odd_days = enum_auto()
+    week_days = enum_auto()
+    week_ends = enum_auto()
+    day_of_week = enum_auto()
 
-    def to_long(self):
-        return {
-            self.monday: "Monday",
-            self.tuesday: "Tuesday",
-            self.wednesday: "Wednesday",
-            self.thursday: "Thursday",
-            self.friday: "Friday",
-            self.saturday: "Saturday",
-            self.sunday: "Sunday"
-        }[self]
+class State(FromPydantic, StrEnum):
+    initial = enum_auto()
+    activated = enum_auto()
+    finished = enum_auto()
+    disabled = enum_auto()
 
-    @staticmethod
-    def from_short(short: str):
-        short = short.lower()[:3]
-        return DayOfWeek({
-            "mon": 0,
-            "tue": 1,
-            "wed": 2,
-            "thu": 3,
-            "fri": 4,
-            "sat": 5,
-            "sun": 6
-        }[short])
-
-    @staticmethod
-    def from_long(long_d: str):
-        long_d = long_d.lower()
-        return DayOfWeek[long_d]
-
-class States(Enum):
-    initial = "initial"
-    activated = "activated"
-    finished = "finished"
-    disabled = "disabled"
-
-class Transitions(Enum):
-    day_reset = "day_reset"     # the test_date is different to the last triggered date
-    trigger = "trigger"       # state is "before_trigger" && the trigger rules are activated
-    finished = "finished"      # state is activated && and the trigger duration has been exceeded
-    disable = "disable"       # sets us to the disabled state
-    enable = "enable"        # sets us to initial state (before_trigger)
+class Transition(FromPydantic, StrEnum):
+    day_reset = enum_auto()     # the test_date is different to the last triggered date
+    trigger = enum_auto()       # state is "before_trigger" && the trigger rules are activated
+    finished = enum_auto()      # state is activated && and the trigger duration has been exceeded
+    disable = enum_auto()       # sets us to the disabled state
+    enable = enum_auto()        # sets us to initial state (before_trigger)
 
 class ProgramModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)

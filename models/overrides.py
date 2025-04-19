@@ -1,11 +1,15 @@
 from datetime import datetime, timedelta
-from enum import Enum, auto
+from enum import StrEnum, auto
 
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, Union 
-class OverrideType(Enum):
-    On = "On"
-    Off = "Off"
+
+from lib.pydantic_helper import FromPydantic
+
+class OverrideType(FromPydantic, StrEnum):
+    On = auto()
+    Off = auto()
+
 
 class OverrideModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
