@@ -283,9 +283,7 @@ class MidnightCrossing(unittest.TestCase):
             is_active = program.is_active(test_dt)
             logging.info(f"Testing at {test_dt}, state: {program.get_state_h()}")
             self.assertFalse(is_active)
-        
-        sleep(5)
-        
+                
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

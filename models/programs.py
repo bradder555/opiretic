@@ -1,6 +1,9 @@
 from enum import Enum, auto as enum_auto
 from datetime import datetime, timedelta, timezone
 
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, Union 
+
 
 class Trigger(Enum):
     daily = "Daily"
@@ -50,20 +53,34 @@ class DayOfWeek(Enum):
         return DayOfWeek[long_d]
 
 class States(Enum):
-    initial = enum_auto()
-    activated = enum_auto()
-    finished = enum_auto()
-    disabled = enum_auto()
+    initial = "initial"
+    activated = "activated"
+    finished = "finished"
+    disabled = "disabled"
 
 class Transitions(Enum):
-    day_reset = enum_auto()     # the test_date is different to the last triggered date
-    trigger = enum_auto()       # state is "before_trigger" && the trigger rules are activated
-    finished = enum_auto()      # state is activated && and the trigger duration has been exceeded
-    disable = enum_auto()       # sets us to the disabled state
-    enable = enum_auto()        # sets us to initial state (before_trigger)
+    day_reset = "day_reset"     # the test_date is different to the last triggered date
+    trigger = "trigger"       # state is "before_trigger" && the trigger rules are activated
+    finished = "finished"      # state is activated && and the trigger duration has been exceeded
+    disable = "disable"       # sets us to the disabled state
+    enable = "enable"        # sets us to initial state (before_trigger)
 
+class ProgramModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
-class Program:
+    _input_dt : datetime 
+    _state : States
+    trigger: Trigger
+    start_time : datetime
+    week_day : Optional[DayOfWeek]
+    enabled : Optional[bool]
+    enabled_after : Optional[datetime]
+    enabled_before : Optional[datetime]
+    duration : timedelta
+
+    last_triggered : Optional[datetime]
+
+class Program :
     def __init__(
         self, 
         trigger: Trigger, 
@@ -199,3 +216,13 @@ class Program:
 
     def is_active(self, dt_input: datetime=None) -> States:
         return self.run(dt_input=dt_input) == States.activated
+    
+    @classmethod
+    def default(cls):
+        return cls(
+            trigger = Trigger.day_of_week,
+            start_time = datetime.fromisoformat("1970-01-01T08:00:00"),
+            duration = timedelta(minutes=30),
+            week_day= DayOfWeek.tuesday,
+            enabled= False
+        )
