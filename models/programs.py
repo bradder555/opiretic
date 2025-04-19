@@ -30,66 +30,103 @@ class Transition(FromPydantic, StrEnum):
     disable = enum_auto()       # sets us to the disabled state
     enable = enum_auto()        # sets us to initial state (before_trigger)
 
-class ProgramModel(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    _input_dt : datetime 
-    _state : States
-    trigger: Trigger
-    start_time : datetime
-    week_day : Optional[DayOfWeek]
-    enabled : Optional[bool]
-    enabled_after : Optional[datetime]
-    enabled_before : Optional[datetime]
-    duration : timedelta
-
-    last_triggered : Optional[datetime]
-
-class Program :
+class Program(FromPydantic) :
     def __init__(
         self, 
-        trigger: Trigger, 
+        trigger: Trigger | str , 
         start_time: datetime,
         duration: timedelta,
-        week_day: DayOfWeek | None,
-        enabled: bool | None,
+        program_id: int,
+        name: str | None,
+        description: str | None, 
+        week_day: DayOfWeek | None | str ,
+        enabled: bool = False  ,
         enabled_after: datetime | None = None,
-        enabled_before: datetime | None = None
+        enabled_before: datetime | None = None,
+        last_triggered: datetime | None = None 
     ):
-        self.trigger = trigger
         self.start_time = start_time
-        self.week_day = week_day
+        self.set_trigger(trigger)
+        self.set_week_day(week_day)
+        self.set_description(description)
+        self.set_name(name)
+
         self.enabled = enabled
         self.enabled_after = enabled_after
         self.enabled_before = enabled_before
-        self.duration = duration
+        
+        self.set_duration(duration)
 
-        self.last_triggered = None # we need to keep this
-        self._set_state_initial()
+        self.program_id = program_id
+
+        self.last_triggered = last_triggered # we need to keep this
+        self._state = State.initial
         self._input_dt : datetime | None = None 
         # don't like defining here, but feel it'll be neater than passing variables
+
+    def set_trigger(self, trigger: Trigger|str):
+        self.trigger = Trigger.from_pydantic(trigger)
+
+    def set_start_time(self, t: time ):
+        d = datetime(1970, 1, 1)
+        d.hour = t.hour
+        d.minute = t.minute 
+        self.start_time = d
+
+    def set_duration(self, dur: int | timedelta):
+        match dur:
+            case x if type(x) is int:
+                self.duration = timedelta(minutes=minutes)
+            case x if type(x) is timedelta:
+                self.duration = dur 
+            case _:
+                raise Exception("unexpected type")        
+
+    def set_name(self, name: str):
+        self.name = name 
+
+    def set_description(self, desc: str):
+        self.description = desc
+
+    def set_enabled(self):
+        self.enabled = True 
+
+    def set_disabled(self):
+        self.enabled = False
+
+    def set_enabled_after(self, d:datetime):
+        self.enabled_after = d
+    
+    def set_enabled_before(self, d:datetime):
+        self.enabled_before = d
+    
+    def set_week_day(self, week_day: DayOfWeek | str):
+        if week_day is not None:
+            self.week_day = week_day if type(week_day) is DayOfWeek else DayOfWeek(week_day)
+        else: 
+            week_day is None
 
     @property 
     def input_dt(self) -> datetime | None :
         return self._input_dt
 
-    def get_state(self) -> States:
+    def get_state(self) -> State:
         return self._state
 
     def get_state_h(self) -> str:
         return self.get_state().name.capitalize()
 
-    def _set_state_disabled(self):
-        self._state = States.disabled
-    
-    def _set_state_initial(self):
-        self._state = States.initial
+    @property
+    def state(self):
+        return self._state
 
-    def _set_state_activated(self):
-        self._state = States.activated
-    
-    def _set_state_finished(self):
-        self._state = States.finished
+    @state.setter
+    def state(self, s: State ):
+        if not isinstance(s, State):
+            self._state = s 
+            return 
+
+        raise Exception(f"{type(s)} is not State")
 
     def _disabled_condition(self):
         if (
@@ -102,12 +139,12 @@ class Program :
 
     def _transitions_all(self):
         if self._disabled_condition():
-            self._set_state_disabled()
+            self._state = State.disabled
             return
 
     def _transitions_disabled(self):
         if not self._disabled_condition():
-            self._set_state_initial()
+            self._state = State.initial
             return 
 
     def _transitions_reset(self): 
@@ -122,13 +159,13 @@ class Program :
             # no transition change so return
             return 
 
-        day_of_week = DayOfWeek(input_dt.weekday())
+        day_of_week = DayOfWeek.from_dt(input_dt.weekday())
         match self.trigger:
             case Trigger.even_days:
-                if dt_input.date().day % 2 == 1:
+                if input_dt.date().day % 2 == 1:
                     return
             case Trigger.odd_days:
-                if dt_input.date().day % 2 == 0:
+                if input_dt.date().day % 2 == 0:
                     return
             case Trigger.week_days:
                 if day_of_week in (DayOfWeek.saturday, DayOfWeek.sunday):
@@ -143,34 +180,34 @@ class Program :
                 pass 
 
         self.last_triggered = self.input_dt
-        self._set_state_activated()
+        self._state = State.activated
          
 
     def _transitions_active(self):
         if self.input_dt >= self.last_triggered + self.duration:
-            self._set_state_finished()
+            self._state = State.finished
 
     def _transitions_finished(self):
         # The job has finished 
         # and it's a new day
         # last_triggered will be set by this time
         if self.last_triggered.date() != self.input_dt.date(): 
-            self._set_state_initial()
+            self._state = State.initial
 
     def _state_machine(self):
         self._transitions_all()
 
         match self.get_state():
-            case States.activated:
+            case State.activated:
                 self._transitions_active()
-            case States.finished:
+            case State.finished:
                 self._transitions_finished()
-            case States.initial:
+            case State.initial:
                 self._transitions_reset()
-            case States.disabled:
+            case State.disabled:
                 self._transitions_disabled()
 
-    def run(self, dt_input : datetime=None) -> States :
+    def run(self, dt_input : datetime=None) -> State :
         
         if dt_input is None:
             dt_input = datetime.now().time()
@@ -179,8 +216,8 @@ class Program :
         self._state_machine()
         return self.get_state()
 
-    def is_active(self, dt_input: datetime=None) -> States:
-        return self.run(dt_input=dt_input) == States.activated
+    def is_active(self, dt_input: datetime=None) -> State:
+        return self.run(dt_input=dt_input) == State.activated
     
     @classmethod
     def default(cls):
@@ -189,5 +226,26 @@ class Program :
             start_time = datetime.fromisoformat("1970-01-01T08:00:00"),
             duration = timedelta(minutes=30),
             week_day= DayOfWeek.tuesday,
-            enabled= False
+            enabled= False,
+            program_id=1,
+            name="",
+            description=""
         )
+
+class ProgramModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    #_input_dt : datetime 
+    #_state : State
+    trigger: Trigger
+    start_time : datetime
+    week_day : Optional[DayOfWeek]
+    enabled : bool
+    enabled_after : Optional[datetime]
+    enabled_before : Optional[datetime]
+    duration : timedelta
+    program_id: int 
+    description: str 
+    name: str 
+
+    last_triggered : Optional[datetime]
