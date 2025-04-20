@@ -82,6 +82,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
+    { name = "openapi-generator-cli", extra = ["jdk4py"] },
     { name = "pyyaml" },
     { name = "tzlocal" },
 ]
@@ -89,6 +90,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.12" },
+    { name = "openapi-generator-cli", extras = ["jdk4py"], specifier = ">=7.12.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "tzlocal", specifier = ">=5.3.1" },
 ]
@@ -198,6 +200,18 @@ wheels = [
 ]
 
 [[package]]
+name = "jdk4py"
+version = "21.0.4.2"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/16/1b/4067dca3b254dc7254292e5e73ebe147c61fd257583b50c575aaae8518b7/jdk4py-21.0.4.2-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:b0577795e70f69e5df92eceb05c0b584bd7512d6e479fad63d49c22362f31e9d", size = 31084680 },
+    { url = "https://files.pythonhosted.org/packages/0b/a3/f355d07c9360900350a99f0a41f274a9d15c36a017227389a87c1e66f4b9/jdk4py-21.0.4.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:65f21dd70360341df4968e2c3a1978dd4b5ec725cd5c0f338f4b418f2e858312", size = 29849280 },
+    { url = "https://files.pythonhosted.org/packages/2c/32/cba369f5c00495373b4de1ead5487b178b8cadee0c66049e8e13da53c1ff/jdk4py-21.0.4.2-py3-none-manylinux_2_17_aarch64.whl", hash = "sha256:12cdccd593e586751aa2aabc82805b72da86a04f00acdadf8af8cd1cdfea86cc", size = 33274561 },
+    { url = "https://files.pythonhosted.org/packages/33/b2/71e29c9943ddd59d57fcba9bae791c39ac3d8d6d88bf0543bd4c12e28323/jdk4py-21.0.4.2-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:b3b2fbfded8b023977aa8b4909c0f9897668a315060e7713610bce0757447707", size = 33915239 },
+    { url = "https://files.pythonhosted.org/packages/75/4c/ddb5d3ee1f42f8b796518c2c3c8aa9da21edb6917385d664fedd097443a5/jdk4py-21.0.4.2-py3-none-win_amd64.whl", hash = "sha256:acbd3cc81af3a1de9489caa573f1cf87a8965923b0c5fc0771bf6f102e81bd56", size = 29834796 },
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -256,6 +270,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979 },
+]
+
+[[package]]
+name = "openapi-generator-cli"
+version = "7.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1b/7d/8f5bb83112179efd887b60390e3b5fdbb38bd993965ef4ce88740d8a6f29/openapi_generator_cli-7.12.0.tar.gz", hash = "sha256:11dc4fd67fc7d839572ae8e29fb1dee5892195a7ac88b98e41a2cd8105e3250f", size = 27094673 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/a8/23b4e7fca4e7015f461c2c520bc49b9b57a6635fd404dd77b0b6f917493e/openapi_generator_cli-7.12.0-py3-none-any.whl", hash = "sha256:cf97e0e40bacc66ca70963845e52b0c003aaab85da7f1d10cc25abf2f1c8bb6e", size = 27108048 },
+]
+
+[package.optional-dependencies]
+jdk4py = [
+    { name = "jdk4py" },
 ]
 
 [[package]]

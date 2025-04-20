@@ -4,3 +4,5 @@ __pycache__/
 config.yaml
 openapi.yaml 
 openapi.json
+
+openapi_client/
