@@ -19,6 +19,9 @@ import os, sys
 
 from fastapi import FastAPI, HTTPException, status, Request, Response 
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi.staticfiles import StaticFiles
 
 import logging 
 logging.basicConfig()
@@ -33,6 +36,13 @@ async def lifespan(app: FastAPI):
     pass 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/config", response_model = ConfigModel  )
 def get_full_config() -> Config :
@@ -338,3 +348,5 @@ def set_program_enabled_before(station_id: int, program_id: int, enabled_before:
         
         p.set_enabled_before(enabled_before)
         return ProgramModel.from_orm(p)
+
+app.mount("/", StaticFiles(directory="./front_end/dist", html=True))
