@@ -1,5 +1,10 @@
 <script lang="ts">
     import { opiClient } from "./client";
+    import type { 
+      SetStationDescriptionConfigStationStationIdDescriptionPutRequest, 
+      GetStationConfigStationStationNoGetRequest 
+    } from "./openapi_client";
+
 
     import {
     Button,
@@ -15,7 +20,15 @@
   let count: number = $state(0)
   const increment = () => {
     count += 1
-    opiClient.getFullConfigConfigGet().then(console.log)
+    opiClient.getStationConfigStationStationNoGet({stationNo: 1}).then(x => {console.log(x); return x.stationId})
+      .then((sid) => {
+        opiClient.setStationDescriptionConfigStationStationIdDescriptionPut({
+          stationId: sid,
+          desc: "Rose Garden"
+        })
+        return sid 
+      }).then( (sid) => opiClient.getStationConfigStationStationNoGet({stationNo: sid}))
+      .then(x => x.description)
   }
 </script>
 
