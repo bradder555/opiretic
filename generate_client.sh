@@ -1,3 +1,5 @@
+uv sync
+
 start_dir="$(pwd)"
 fe_dir="./front_end"
 out_dir="$fe_dir/src/lib/openapi_client"

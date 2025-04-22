@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { opiClient } from "./client";
+    import { opiClient } from "../lib/client";
     import type { 
       SetStationDescriptionConfigStationStationIdDescriptionPutRequest, 
       GetStationConfigStationStationNoGetRequest 

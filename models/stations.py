@@ -20,6 +20,7 @@ class Station(FromPydantic):
         station_id: int, 
         programs: dict[int, Program] | dict[int, BaseModel] | dict[int, dict],
         override: Override | None | dict | list[BaseModel],
+        name: str = "",
         description: str = "",
         enabled: bool = False 
     ):
@@ -27,6 +28,7 @@ class Station(FromPydantic):
         self.programs = {x[0] : Program.from_pydantic(x[1]) for x in programs.items()}
         self.override = Override.from_pydantic(override) if override else None 
         self.description = description
+        self.name = name 
         self.enabled = enabled
 
     @classmethod
@@ -123,6 +125,9 @@ class StationModel(BaseModel):
     programs: dict[int, ProgramModel]
     override: Optional[OverrideModel]
     enabled: bool 
+
+    description: str 
+    name: str 
     
     def to_orm(self) -> Station:
         return Station(**self.model_dump())
@@ -130,6 +135,7 @@ class StationModel(BaseModel):
 class StationSummaryModel(BaseModel):
     station_id: int 
     description: str 
+    name: str 
     override_active: bool
     override_type: Optional[OverrideType]
     program_states: dict[int, State ]
