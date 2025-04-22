@@ -19,8 +19,8 @@ import os, sys
 
 from fastapi import FastAPI, HTTPException, status, Request, Response 
 from fastapi.responses import RedirectResponse
-from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 import logging 
@@ -350,3 +350,4 @@ def set_program_enabled_before(station_id: int, program_id: int, enabled_before:
         return ProgramModel.from_orm(p)
 
 app.mount("/", StaticFiles(directory="./front_end/dist", html=True))
+
