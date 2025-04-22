@@ -2,3 +2,7 @@ __pycache__/
 .vscode/
 
 config.yaml
+openapi.yaml 
+openapi.json
+
+**/openapi_client/
